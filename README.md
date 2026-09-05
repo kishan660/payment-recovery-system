@@ -27,6 +27,19 @@ Fault-tolerant payment reconciliation and recovery demo for Razorpay payments. T
 - Optional background reconciliation/recovery worker via `ENABLE_BACKGROUND_WORKER=1`.
 - Browser dashboard for loading provider state, local state, recovery history, and job status.
 
+## Demo Video
+This demo demonstrates the complete payment recovery workflow, including:
+
+- Razorpay payment verification
+- Payment status mismatch detection
+- Recovery attempt and simulated failure
+- Retry and successful recovery
+- Payment reconciliation
+- Recovery history
+- Monitoring dashboard
+
+https://www.loom.com/share/ee603690e22f470187e4bd0e7e87f55a
+
 ## Setup
 
 Run these commands from the repository root in PowerShell:
