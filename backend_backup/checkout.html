@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Razorpay Test Payment</title>
+</head>
+
+<body>
+
+<h2>Payment Recovery System</h2>
+
+<button id="pay-button">Pay ₹1000</button>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+document.getElementById("pay-button").onclick = async function () {
+
+    console.log("Creating fresh Razorpay order...");
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/test/create-checkout-order",
+            {
+                method: "POST"
+            }
+        );
+
+        const order = await response.json();
+
+        console.log("Fresh order:", order);
+
+        if (order.status !== "SUCCESS") {
+            throw new Error("Order creation failed");
+        }
+
+        const options = {
+
+            key: order.key_id,
+
+            amount: order.amount,
+
+            currency: order.currency,
+
+            name: "Payment Recovery System",
+
+            description: "Fault Tolerance Test",
+
+            order_id: order.order_id,
+
+            handler: function (response) {
+
+                console.log("PAYMENT SUCCESS");
+                console.log(response);
+
+                alert(
+                    "Payment successful!\n\n" +
+                    "Payment ID: " +
+                    response.razorpay_payment_id
+                );
+            }
+        };
+
+        const rzp = new Razorpay(options);
+
+        rzp.on("payment.failed", function (response) {
+
+            console.error("PAYMENT FAILED");
+            console.error(response);
+
+            alert(
+                "PAYMENT FAILED\n\n" +
+                "Code: " + response.error.code +
+                "\nDescription: " + response.error.description +
+                "\nReason: " + response.error.reason
+            );
+        });
+
+        rzp.open();
+
+    } catch (error) {
+
+        console.error("Checkout error:", error);
+
+        alert(
+            "Could not create payment order.\n\n" +
+            error.message
+        );
+    }
+};
+
+</script>
+
+</body>
+</html>

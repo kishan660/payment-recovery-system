@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Razorpay Test Payment</title>
+</head>
+
+<body>
+
+<h2>Razorpay Test Payment</h2>
+
+<button id="pay-button">Pay ₹3500</button>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+
+const options = {
+
+    key: "YOUR_RAZORPAY_KEY_ID",
+
+    amount: 350000,
+
+    currency: "INR",
+
+    name: "Payment Recovery System",
+
+    description: "Fault Tolerance Test",
+
+    order_id: "YOUR_RAZORPAY_ORDER_ID",
+
+    handler: function (response) {
+
+        console.log("PAYMENT SUCCESS");
+        console.log(response);
+
+        alert(
+            "Payment successful!\n\n" +
+            "Payment ID: " +
+            response.razorpay_payment_id
+        );
+    },
+
+    modal: {
+        ondismiss: function () {
+            console.log("Payment window closed");
+        }
+    }
+};
+
+const rzp = new Razorpay(options);
+
+document.getElementById("pay-button").onclick = function () {
+
+    console.log("Opening Razorpay...");
+
+    rzp.open();
+};
+
+</script>
+
+</body>
+</html>

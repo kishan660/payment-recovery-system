@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Recovery Dashboard</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f5f7fb;
+            --panel: #ffffff;
+            --ink: #18212f;
+            --muted: #64748b;
+            --line: #d8dee9;
+            --brand: #0f766e;
+            --brand-dark: #115e59;
+            --warn: #b45309;
+            --bad: #b91c1c;
+            --good: #047857;
+            --soft: #eef4f8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.45;
+        }
+
+        header {
+            background: #ffffff;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .shell {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            min-height: 72px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        main {
+            padding: 24px 0 40px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) repeat(5, auto);
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        input {
+            width: 100%;
+            min-height: 40px;
+            padding: 9px 11px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--ink);
+            background: #ffffff;
+            font-size: 14px;
+        }
+
+        button {
+            min-height: 40px;
+            padding: 9px 13px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--ink);
+            background: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        button.primary {
+            border-color: var(--brand);
+            background: var(--brand);
+            color: #ffffff;
+        }
+
+        button.primary:hover {
+            background: var(--brand-dark);
+        }
+
+        button:hover {
+            background: var(--soft);
+        }
+
+        .status-line {
+            min-height: 24px;
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+
+        .metric-value {
+            min-height: 28px;
+            overflow-wrap: anywhere;
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-top: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+            overflow-wrap: anywhere;
+            font-size: 14px;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .pill {
+            display: inline-block;
+            max-width: 100%;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: var(--soft);
+            color: var(--ink);
+            font-size: 12px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .pill.good {
+            background: #dcfce7;
+            color: var(--good);
+        }
+
+        .pill.warn {
+            background: #fef3c7;
+            color: var(--warn);
+        }
+
+        .pill.bad {
+            background: #fee2e2;
+            color: var(--bad);
+        }
+
+        .empty {
+            color: var(--muted);
+            padding: 12px 0 2px;
+            font-size: 14px;
+        }
+
+        pre {
+            max-height: 220px;
+            overflow: auto;
+            margin: 0;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-size: 12px;
+        }
+
+        @media (max-width: 980px) {
+            .controls,
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .shell {
+                width: min(100% - 20px, 1180px);
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+                justify-content: center;
+                padding: 14px 0;
+            }
+
+            .controls,
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="shell topbar">
+            <h1>Payment Recovery Dashboard</h1>
+            <span id="api-base" class="pill">API: same origin</span>
+        </div>
+    </header>
+
+    <main class="shell">
+        <section class="controls" aria-label="Dashboard actions">
+            <input
+                id="payment-id"
+                type="text"
+                value="pay_TY0oUxz39ErL8e"
+                aria-label="Payment ID"
+                placeholder="Payment ID"
+            >
+            <button class="primary" id="load-button" type="button">Load</button>
+            <button id="pending-button" type="button">Set Pending</button>
+            <button id="fail-button" type="button">Fail Once</button>
+            <button id="recover-button" type="button">Recover</button>
+            <button id="queue-button" type="button">Queue Job</button>
+        </section>
+
+        <div id="status-line" class="status-line">Ready.</div>
+
+        <section class="grid" aria-label="Payment summary">
+            <div class="panel">
+                <div class="metric-label">Payment ID</div>
+                <div id="summary-payment-id" class="metric-value">-</div>
+            </div>
+            <div class="panel">
+                <div class="metric-label">Payment Status</div>
+                <div id="summary-payment-status" class="metric-value">-</div>
+            </div>
+            <div class="panel">
+                <div class="metric-label">Provider Status</div>
+                <div id="summary-provider-status" class="metric-value">-</div>
+            </div>
+            <div class="panel">
+                <div class="metric-label">Reconciliation</div>
+                <div id="summary-reconciliation" class="metric-value">-</div>
+            </div>
+            <div class="panel">
+                <div class="metric-label">Amount</div>
+                <div id="summary-amount" class="metric-value">-</div>
+            </div>
+            <div class="panel">
+                <div class="metric-label">Currency</div>
+                <div id="summary-currency" class="metric-value">-</div>
+            </div>
+            <div class="panel">
+                <div class="metric-label">Recovery Job</div>
+                <div id="summary-job-status" class="metric-value">-</div>
+            </div>
+            <div class="panel">
+                <div class="metric-label">Retry Count</div>
+                <div id="summary-retry-count" class="metric-value">-</div>
+            </div>
+            <div class="panel">
+                <div class="metric-label">Last Error</div>
+                <div id="summary-last-error" class="metric-value">-</div>
+            </div>
+        </section>
+
+        <section class="stack">
+            <div class="panel">
+                <div class="section-title">
+                    <h2>Recovery Attempts</h2>
+                    <span id="attempt-count" class="pill">0</span>
+                </div>
+                <div id="attempts"></div>
+            </div>
+
+            <div class="panel">
+                <div class="section-title">
+                    <h2>Recovery Logs</h2>
+                    <span id="log-count" class="pill">0</span>
+                </div>
+                <div id="logs"></div>
+            </div>
+
+            <div class="panel">
+                <div class="section-title">
+                    <h2>Last API Response</h2>
+                </div>
+                <pre id="last-response">{}</pre>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const state = {
+            paymentId: "",
+            reconciliation: null,
+            provider: null,
+            history: null,
+            job: null,
+            lastResponse: null
+        };
+
+        const elements = {
+            input: document.getElementById("payment-id"),
+            statusLine: document.getElementById("status-line"),
+            apiBase: document.getElementById("api-base"),
+            paymentId: document.getElementById("summary-payment-id"),
+            paymentStatus: document.getElementById("summary-payment-status"),
+            providerStatus: document.getElementById("summary-provider-status"),
+            reconciliation: document.getElementById("summary-reconciliation"),
+            amount: document.getElementById("summary-amount"),
+            currency: document.getElementById("summary-currency"),
+            jobStatus: document.getElementById("summary-job-status"),
+            retryCount: document.getElementById("summary-retry-count"),
+            lastError: document.getElementById("summary-last-error"),
+            attempts: document.getElementById("attempts"),
+            logs: document.getElementById("logs"),
+            attemptCount: document.getElementById("attempt-count"),
+            logCount: document.getElementById("log-count"),
+            lastResponse: document.getElementById("last-response")
+        };
+
+        const apiBase = window.location.origin;
+        elements.apiBase.textContent = `API: ${apiBase}`;
+
+        function getPaymentId() {
+            return elements.input.value.trim();
+        }
+
+        function setStatus(message) {
+            elements.statusLine.textContent = message;
+        }
+
+        function formatValue(value) {
+            if (value === null || value === undefined || value === "") {
+                return "-";
+            }
+
+            return String(value);
+        }
+
+        function formatDate(value) {
+            if (!value) {
+                return "-";
+            }
+
+            return new Date(value).toLocaleString();
+        }
+
+        function escapeHtml(value) {
+            return formatValue(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function statusClass(value) {
+            if (!value) {
+                return "";
+            }
+
+            if (["SUCCESS", "RECOVERED", "CONSISTENT", "COMPLETED", "PROCESSED"].includes(value)) {
+                return "good";
+            }
+
+            if (["PENDING", "RETRY_REQUIRED", "QUEUED", "RETRY_WAIT", "MISMATCH"].includes(value)) {
+                return "warn";
+            }
+
+            if (["FAILED", "RECOVERY_FAILED", "RECOVERY_BLOCKED", "NOT_FOUND", "UNMATCHED"].includes(value)) {
+                return "bad";
+            }
+
+            return "";
+        }
+
+        function pill(value) {
+            const text = formatValue(value);
+            return `<span class="pill ${statusClass(text)}">${escapeHtml(text)}</span>`;
+        }
+
+        async function requestJson(path, options = {}) {
+            const response = await fetch(`${apiBase}${path}`, options);
+            const body = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(body.detail || `HTTP ${response.status}`);
+            }
+
+            state.lastResponse = body;
+            elements.lastResponse.textContent = JSON.stringify(body, null, 2);
+
+            return body;
+        }
+
+        async function loadDashboard() {
+            const paymentId = getPaymentId();
+
+            if (!paymentId) {
+                setStatus("Enter a payment ID.");
+                return;
+            }
+
+            state.paymentId = paymentId;
+            setStatus("Loading payment dashboard...");
+
+            const [reconciliation, provider, history, job] = await Promise.all([
+                requestJson(`/reconcile/${encodeURIComponent(paymentId)}`),
+                requestJson(`/provider/payments/${encodeURIComponent(paymentId)}`).catch(error => ({
+                    status: "UNAVAILABLE",
+                    detail: error.message
+                })),
+                requestJson(`/recovery/history/${encodeURIComponent(paymentId)}`),
+                requestJson(`/recovery/jobs/${encodeURIComponent(paymentId)}`)
+            ]);
+
+            state.reconciliation = reconciliation;
+            state.provider = provider;
+            state.history = history;
+            state.job = job;
+
+            render();
+            setStatus("Dashboard loaded.");
+        }
+
+        async function setPending() {
+            const paymentId = getPaymentId();
+
+            if (!paymentId) {
+                setStatus("Enter a payment ID.");
+                return;
+            }
+
+            setStatus("Creating local PENDING payment...");
+            await requestJson(
+                `/test/payments/${encodeURIComponent(paymentId)}/pending`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: "{}"
+                }
+            );
+            await loadDashboard();
+        }
+
+        async function failOnce() {
+            const paymentId = getPaymentId();
+
+            if (!paymentId) {
+                setStatus("Enter a payment ID.");
+                return;
+            }
+
+            setStatus("Running simulated failure...");
+            await requestJson(
+                `/test/recovery/${encodeURIComponent(paymentId)}?simulate_failures=1`,
+                {
+                    method: "POST"
+                }
+            );
+            await loadDashboard();
+        }
+
+        async function recover() {
+            const paymentId = getPaymentId();
+
+            if (!paymentId) {
+                setStatus("Enter a payment ID.");
+                return;
+            }
+
+            setStatus("Recovering payment...");
+            await requestJson(
+                `/test/recovery/${encodeURIComponent(paymentId)}?simulate_failures=0`,
+                {
+                    method: "POST"
+                }
+            );
+            await loadDashboard();
+        }
+
+        async function queueJob() {
+            const paymentId = getPaymentId();
+
+            if (!paymentId) {
+                setStatus("Enter a payment ID.");
+                return;
+            }
+
+            setStatus("Queueing recovery job...");
+            await requestJson(
+                `/recovery/queue/${encodeURIComponent(paymentId)}`,
+                {
+                    method: "POST"
+                }
+            );
+            await loadDashboard();
+        }
+
+        function renderSummary() {
+            const reconciliation = state.reconciliation || {};
+            const providerPayment = state.provider && state.provider.payment
+                ? state.provider.payment
+                : {};
+            const job = state.job || {};
+            const providerAmount = providerPayment.amount
+                ? providerPayment.amount / 100
+                : null;
+            const amount = reconciliation.database_amount
+                ?? providerAmount;
+            const currency = reconciliation.database_currency
+                || reconciliation.currency
+                || providerPayment.currency;
+
+            elements.paymentId.textContent = formatValue(state.paymentId || reconciliation.payment_id);
+            elements.paymentStatus.innerHTML = pill(reconciliation.database_status);
+            elements.providerStatus.innerHTML = pill(reconciliation.provider_status || providerPayment.internal_status);
+            elements.reconciliation.innerHTML = pill(reconciliation.status);
+            elements.amount.textContent = formatValue(amount);
+            elements.currency.textContent = formatValue(currency);
+            elements.jobStatus.innerHTML = pill(job.status);
+            elements.retryCount.textContent = formatValue(job.retry_count);
+            elements.lastError.textContent = formatValue(job.last_error);
+        }
+
+        function renderAttempts() {
+            const attempts = state.history && state.history.attempts
+                ? state.history.attempts
+                : [];
+
+            elements.attemptCount.textContent = attempts.length;
+
+            if (!attempts.length) {
+                elements.attempts.innerHTML = '<div class="empty">No recovery attempts recorded.</div>';
+                return;
+            }
+
+            elements.attempts.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Attempt</th>
+                            <th>Status</th>
+                            <th>Error</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${attempts.map(attempt => `
+                            <tr>
+                                <td>${escapeHtml(attempt.attempt_number)}</td>
+                                <td>${pill(attempt.status)}</td>
+                                <td>${escapeHtml(attempt.error_message)}</td>
+                                <td>${escapeHtml(formatDate(attempt.created_at))}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderLogs() {
+            const logs = state.history && state.history.logs
+                ? state.history.logs
+                : [];
+
+            elements.logCount.textContent = logs.length;
+
+            if (!logs.length) {
+                elements.logs.innerHTML = '<div class="empty">No recovery logs recorded.</div>';
+                return;
+            }
+
+            elements.logs.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Previous</th>
+                            <th>New</th>
+                            <th>Reason</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${logs.map(log => `
+                            <tr>
+                                <td>${pill(log.action)}</td>
+                                <td>${escapeHtml(log.previous_status)}</td>
+                                <td>${escapeHtml(log.new_status)}</td>
+                                <td>${escapeHtml(log.reason)}</td>
+                                <td>${escapeHtml(formatDate(log.created_at))}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function render() {
+            renderSummary();
+            renderAttempts();
+            renderLogs();
+        }
+
+        async function runAction(action) {
+            try {
+                await action();
+            } catch (error) {
+                setStatus(error.message);
+                elements.lastResponse.textContent = JSON.stringify({
+                    error: error.message
+                }, null, 2);
+            }
+        }
+
+        document.getElementById("load-button").addEventListener("click", () => runAction(loadDashboard));
+        document.getElementById("pending-button").addEventListener("click", () => runAction(setPending));
+        document.getElementById("fail-button").addEventListener("click", () => runAction(failOnce));
+        document.getElementById("recover-button").addEventListener("click", () => runAction(recover));
+        document.getElementById("queue-button").addEventListener("click", () => runAction(queueJob));
+        elements.input.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                runAction(loadDashboard);
+            }
+        });
+
+        render();
+    </script>
+</body>
+</html>
